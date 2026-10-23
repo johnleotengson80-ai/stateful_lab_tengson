@@ -9,6 +9,7 @@ class CartApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shopping Cart ni JL',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
@@ -50,7 +51,7 @@ class _CartScreenState extends State<CartScreen> {
     _items.addAll([
       CartItem(name: 'Bread', price: 2.50, quantity: 1),
       CartItem(name: 'Milk', price: 3.25, quantity: 2),
-      CartItem(name: 'Imbotido', price: 1.20, quantity: 4),
+      CartItem(name: 'Imbotido ni jl', price: 1.20, quantity: 4),
       CartItem(name: 'Apples', price: 1.20, quantity: 4),
       CartItem(name: 'Eggs', price: 2.00, quantity: 1),
     ]);
@@ -64,7 +65,13 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _increase(int index) {
-    setState(() => _items[index].quantity++);
+    if (_items[index].quantity < 10) {
+      setState(() => _items[index].quantity++);
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Maximum quantity reached.')),
+      );
+    }
   }
 
   void _decrease(int index) {
@@ -89,9 +96,16 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     setState(() {
+      if (_items.any((item) => item.name.toLowerCase() == name.toLowerCase())) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item already exists in the cart.')),
+        );
+        return;
+      }else{
       _items.add(CartItem(name: name, price: price));
       _nameController.clear();
       _priceController.clear();
+      }
     });
     FocusScope.of(context).unfocus();
   }
@@ -261,8 +275,8 @@ class CartItemTile extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             IconButton(
-              tooltip: 'Increase quantity',
-              onPressed: onIncrease,
+              tooltip: item.quantity >= 10 ? 'Maximum quantity reached' : 'Increase quantity',
+              onPressed: item.quantity < 10 ? onIncrease : null,
               icon: const Icon(Icons.add_circle_outline),
             ),
           ],
